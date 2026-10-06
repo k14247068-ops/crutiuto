@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Project
         run: |
-          flutter create my_app --platforms=android
+          flutter create my_app --org com.voiceapp --platforms=android
           cd my_app
           flutter pub add speech_to_text
           if [ -f "../main.dart" ]; then
