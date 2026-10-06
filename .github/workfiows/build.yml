@@ -23,13 +23,17 @@ jobs:
 
       - name: Build Project
         run: |
-          flutter create my_app --org com.voiceapp --platforms=android
+          flutter create --org com.voiceapp my_app --platforms=android
+          if [ -f "main.dart" ]; then
+            cp main.dart my_app/lib/main.dart
+          fi
           cd my_app
           flutter pub add speech_to_text
-          if [ -f "../main.dart" ]; then
-            cp ../main.dart lib/main.dart
-          fi
           flutter build apk --release
+
+          # キーの自動生成とAPKへのデジタル署名（OUKITEL等でのブロック防止）
+          keytool -genkey -v -keystore my-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias my-key-alias -dname "CN=Developer, OU=Dev, O=App, L=City, S=State, C=JP" -storepass password -keypass password
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore my-release-key.jks -storepass password build/app/outputs/flutter-apk/app-release.apk my-key-alias
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
