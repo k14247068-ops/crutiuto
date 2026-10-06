@@ -1,0 +1,44 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create Project and Replace Code
+        run: |
+          flutter create my_app --platforms=android
+          cd my_app
+          flutter pub add speech_to_text
+          if [ -f "../main.dart" ]; then
+            cp ../main.dart lib/main.dart
+          fi
+
+      - name: Build APK
+        run: |
+          cd my_app
+          flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apk
+          path: my_app/build/app/outputs/flutter-apk/app-release.apk
+
